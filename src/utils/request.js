@@ -7,7 +7,11 @@ import { getToken } from '@/utils/auth'
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API, // url = base url + request url
   // withCredentials: true, // send cookies when cross-domain requests
-  timeout: 5000 // request timeout
+  timeout: 5000, // request timeout
+  headers: {
+    "Content-Type": "application/json;charset=utf-8",
+    "X-Requested-With": "XMLHttpRequest"
+  }
 })
 
 // request interceptor
@@ -46,15 +50,15 @@ service.interceptors.response.use(
     const res = response.data
 
     // if the custom code is not 20000, it is judged as an error.
-    if (res.code !== 20000) {
+    if (res.isError === true) {
       Message({
         message: res.message || 'Error',
         type: 'error',
         duration: 5 * 1000
       })
 
-      // 50008: Illegal token; 50012: Other clients logged in; 50014: Token expired;
-      if (res.code === 50008 || res.code === 50012 || res.code === 50014) {
+      // TODO: change token expired logic
+      if (res.statusCode === 401 || res.statusCode === 400) {
         // to re-login
         MessageBox.confirm('You have been logged out, you can cancel to stay on this page, or log in again', 'Confirm logout', {
           confirmButtonText: 'Re-Login',
@@ -68,17 +72,28 @@ service.interceptors.response.use(
       }
       return Promise.reject(new Error(res.message || 'Error'))
     } else {
-      return res
+      return res.result;
     }
   },
   error => {
     console.log('err' + error) // for debug
-    Message({
-      message: error.message,
-      type: 'error',
-      duration: 5 * 1000
-    })
-    return Promise.reject(error)
+
+    let isShowNormalError = true
+    const hideNormalError = () => isShowNormalError = false
+
+    setTimeout(() => {
+      if (isShowNormalError) {
+        // todo change, show a standard error message for official projet in chinese
+        Message({
+          message: error.message,
+          type: 'error',
+          duration: 5 * 1000
+        })
+      }
+  })
+
+    
+    return Promise.reject( { ...error.response, hideNormalError } )
   }
 )
 

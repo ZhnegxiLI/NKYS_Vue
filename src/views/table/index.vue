@@ -44,7 +44,7 @@
 </template>
 
 <script>
-import { getList } from '@/api/table'
+import { getCycles } from '@/api/cycle'
 
 export default {
   filters: {
@@ -69,8 +69,9 @@ export default {
   methods: {
     fetchData() {
       this.listLoading = true
-      getList().then(response => {
-        this.list = response.data.items
+      getCycles().then(response => {
+        //this.list = response.data.items
+        console.log(response);
         this.listLoading = false
       })
     }
