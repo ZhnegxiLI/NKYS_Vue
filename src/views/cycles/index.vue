@@ -1,17 +1,41 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="searchCriteria.Year" placeholder="年" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input
+        v-model="searchCriteria.Year"
+        placeholder="年"
+        style="width: 200px"
+        class="filter-item"
+        @keyup.enter.native="handleFilter"
+      />
 
-      <el-select v-model="searchCriteria.Validity" placeholder="是否有效" clearable class="filter-item" style="width: 130px">
+      <el-select
+        v-model="searchCriteria.Validity"
+        placeholder="是否有效"
+        clearable
+        class="filter-item"
+        style="width: 130px"
+      >
         <el-option :key="true" label="是" :value="true" />
         <el-option :key="false" label="否" :value="false" />
       </el-select>
-   
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+
+      <el-button
+        v-waves
+        class="filter-item"
+        type="primary"
+        icon="el-icon-search"
+        @click="handleFilter"
+      >
         Search
       </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
+      <el-button
+        class="filter-item"
+        style="margin-left: 10px"
+        type="primary"
+        icon="el-icon-edit"
+        @click="handleCreate"
+      >
         Add
       </el-button>
     </div>
@@ -22,52 +46,62 @@
       border
       fit
       highlight-current-row
-      style="width: 100%;"
+      style="width: 100%"
       @sort-change="sortChange"
     >
-      <el-table-column label="ID" prop="Id" sortable align="center" width="80" >
-        <template slot-scope="{row}">
+      <el-table-column label="ID" prop="Id" sortable align="center" width="80">
+        <template slot-scope="{ row }">
           <span>{{ row.Id }}</span>
         </template>
       </el-table-column>
       <el-table-column label="周期名字" width="150px" align="center" sortable>
-        <template slot-scope="{row}">
+        <template slot-scope="{ row }">
           <span>{{ row.Label }}</span>
         </template>
       </el-table-column>
       <el-table-column label="年" min-width="150px" sortable>
-        <template slot-scope="{row}">
+        <template slot-scope="{ row }">
           <span>{{ row.Year }}</span>
         </template>
       </el-table-column>
       <el-table-column el-table-column label="月" min-width="150px">
-        <template slot-scope="{row}">
+        <template slot-scope="{ row }">
           <span>{{ row.Month }}</span>
         </template>
       </el-table-column>
-      <el-table-column v-if="showReviewer" label="起始日期" width="110px" align="center">
-        <template slot-scope="{row}">
+      <el-table-column
+        v-if="showReviewer"
+        label="起始日期"
+        width="110px"
+        align="center"
+      >
+        <template slot-scope="{ row }">
           <span>{{ row.FromDate }}</span>
         </template>
       </el-table-column>
       <el-table-column label="结束日期" width="80px">
-      <template slot-scope="{row}">
+        <template slot-scope="{ row }">
           <span>{{ row.ToDate }}</span>
         </template>
       </el-table-column>
       <el-table-column label="是否有效" width="80px" sortable>
-      <template slot-scope="{row}">
+        <template slot-scope="{ row }">
           <span>{{ row.Validity }}</span>
         </template>
       </el-table-column>
       <el-table-column label="标准工作时" width="80px" sortable>
-      <template slot-scope="{row}">
+        <template slot-scope="{ row }">
           <span>{{ row.StandardWorkingHours }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column label="操作" align="center" width="230" class-name="small-padding fixed-width">
-        <template slot-scope="{row}">
+      <el-table-column
+        label="操作"
+        align="center"
+        width="230"
+        class-name="small-padding fixed-width"
+      >
+        <template slot-scope="{ row }">
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
             Edit
           </el-button>
@@ -75,33 +109,53 @@
       </el-table-column>
     </el-table>
 
+    <el-dialog
+      :title="cycleObj.Id > 0 ? '更新' : '创建'"
+      :visible.sync="dialogCycleFormVisible"
+    >
+      <el-form
+        ref="cycleObj"
+        :rules="rules"
+        :model="cycleObj"
+        label-position="left"
+        label-width="100px"
+      >
 
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="Date" prop="timestamp">
-          <el-date-picker v-model="temp.timestamp" type="datetime" placeholder="Please pick a date" />
+        <el-form-item label="周期名字" prop="Label">
+          <el-input v-model="cycleObj.Label" />
         </el-form-item>
-        <el-form-item label="Title" prop="title">
-          <el-input v-model="temp.title" />
+        <el-form-item label="* 周期时间" prop="DateValidation">
+          <el-col :span="11">
+            <el-date-picker
+              type="date"
+              placeholder="起始日期"
+              v-model="cycleObj.FromDate"
+              style="width: 100%"
+            ></el-date-picker>
+          </el-col>
+          <el-col style="text-align: center" :span="2">-</el-col>
+          <el-col :span="11">
+            <el-date-picker
+              type="date"
+              placeholder="结束日期"
+              v-model="cycleObj.ToDate"
+              style="width: 100%"
+            ></el-date-picker>
+          </el-col>
         </el-form-item>
-        <el-form-item label="Status">
-          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />
-          </el-select>
+
+        <el-form-item label="标准工作时" prop="StandardWorkingHours">
+          <el-input v-model.number="cycleObj.StandardWorkingHours" />
         </el-form-item>
-        <el-form-item label="Imp">
-          <el-rate v-model="temp.importance" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" :max="3" style="margin-top:8px;" />
-        </el-form-item>
-        <el-form-item label="Remark">
-          <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="Please input" />
-        </el-form-item>
+        <el-checkbox v-model="cycleObj.Validity">是否有效</el-checkbox>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">
-          Cancel
-        </el-button>
-        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
-          Confirm
+        <el-button @click="dialogCycleFormVisible = false"> Cancel </el-button>
+        <el-button
+          type="primary"
+          @click="cycleObj.Id > 0 ? updateData() :createCycle ()"
+        >
+          保存
         </el-button>
       </div>
     </el-dialog>
@@ -109,155 +163,189 @@
 </template>
 
 <script>
-import waves from '@/directive/waves' // waves directive
-import {getCycles} from '@api/cycle';
-import func from 'vue-editor-bridge';
+import waves from "@/directive/waves"; // waves directive
+import { getCycles, createOrEditCycle } from "@/api/cycle";
 
 export default {
-  name: 'CyclesTable',
+  name: "CyclesTable",
   directives: { waves },
   data() {
+    var validateCycleFormDate = (rule, value, callback) => {
+      let validity = true;
+      if (
+        this.cycleObj.FromDate != null &&
+        this.cycleObj.ToDate != null &&
+        this.cycleObj.FromDate > this.cycleObj.ToDate
+      ) {
+        validity = false;
+        callback(new Error("起始日期不能大于结束日期"));
+      } else {
+        if (this.cycleObj.FromDate == null) {
+          callback(new Error("起始日期不能为空"));
+        }
+        if (this.cycleObj.ToDate == null) {
+          callback(new Error("结束日期不能为空"));
+        }
+      }
+      callback();
+    };
     return {
       list: null,
       total: 0,
       listLoading: true,
       searchCriteria: {
-          Year: null,
-          Validity: null,
-          Id: null
+        Year: null,
+        Validity: null,
+        Id: null,
       },
-      sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
-      statusOptions: ['published', 'draft', 'deleted'],
+      sortOptions: [
+        { label: "ID Ascending", key: "+id" },
+        { label: "ID Descending", key: "-id" },
+      ],
+      statusOptions: ["published", "draft", "deleted"],
       showReviewer: false,
-      temp: {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        type: '',
-        status: 'published'
+      cycleObj: {
+        Id: 0,
+        Label: "",
+        FromDate: null,
+        ToDate: null,
+        Validity: true,
+        StandardWorkingHours: null,
       },
-      dialogFormVisible: false,
-      dialogStatus: '',
+      dialogCycleFormVisible: false,
       textMap: {
-        update: 'Edit',
-        create: 'Create'
+        update: "Edit",
+        create: "Create",
       },
       rules: {
-        type: [{ required: true, message: 'type is required', trigger: 'change' }],
-        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
-      }
-    }
+        Label: [
+          { required: true, message: "周期标题为必须", trigger: "change" },
+        ],
+        DateValidation: [
+          {
+            trigger: "blur",
+            validator: validateCycleFormDate,
+          },
+        ],
+        StandardWorkingHours: [
+          { type: "number", message: "标准工作时为数字", trigger: "blur" },
+        ],
+      },
+    };
   },
   created() {
-    this.getList()
+    this.getList();
   },
   methods: {
     getList() {
-      this.listLoading = true
+      this.listLoading = true;
       // todo add param
-      getCycles().then(function(result){
-        if(result!=null && result.length>0){
-            this.list = result;
-        }
-        else{
+      getCycles().then((result) => {
+        if (result != null && result.length > 0) {
+          this.list = result;
+        } else {
           this.list = [];
         }
-          this.listLoading = false
+        this.listLoading = false;
       });
     },
     handleFilter() {
       //this.listQuery.page = 1
-      this.getList()
+      this.getList();
     },
     handleModifyStatus(row, status) {
       this.$message({
-        message: '操作Success',
-        type: 'success'
-      })
-      row.status = status
+        message: "操作Success",
+        type: "success",
+      });
+      row.status = status;
     },
     sortChange(data) {
-      const { prop, order } = data
-      if (prop === 'Id') {
+      const { prop, order } = data;
+      if (prop === "Id") {
         // TODO add order function
         //this.sortByID(order)
       }
     },
-    resetSearchCriteria(){
+    resetSearchCriteria() {
       this.searchCriteria = {
-          Year: null,
-          Validity: null,
-          Id: null
+        Year: null,
+        Validity: null,
+        Id: null,
       };
     },
     resetTemp() {
-      this.temp = {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        status: 'published',
-        type: ''
-      }
+      this.cycleObj = {
+        Id: 0,
+        Label: "",
+        FromDate: null,
+        ToDate: null,
+        Validity: true,
+        StandardWorkingHours: null,
+      };
     },
     handleCreate() {
-      this.resetTemp()
-      this.dialogStatus = 'create'
-      this.dialogFormVisible = true
+      this.resetTemp();
+      this.dialogCycleFormVisible = true;
       this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
+        // this.$refs["dataForm"].clearValidate();
+      });
     },
-    createData() {
-      this.$refs['dataForm'].validate((valid) => {
+    createCycle() {
+      console.log(this.cycleObj)
+      this.$refs["cycleObj"].validate((valid) => {
         if (valid) {
-          this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-          this.temp.author = 'vue-element-admin'
-          createArticle(this.temp).then(() => {
-            this.list.unshift(this.temp)
-            this.dialogFormVisible = false
-            this.$notify({
-              title: 'Success',
-              message: 'Created Successfully',
-              type: 'success',
-              duration: 2000
-            })
-          })
+          createOrEditCycle(this.cycleObj).then((result) => {
+            if (result > 0) {
+              this.$notify({
+                title: "成功",
+                message: "创建成功",
+                type: "success",
+                duration: 2000,
+              });
+              this.dialogCycleFormVisible = false;
+              // Refresh list 
+              this.getList();
+            }
+            else{
+                this.$notify({
+                title: "失败",
+                message: "创建失败",
+                type: "fail",
+                duration: 2000,
+              });
+            }
+          });
         }
-      })
+      });
     },
     handleUpdate(row) {
-      this.temp = Object.assign({}, row) // copy obj
-      this.temp.timestamp = new Date(this.temp.timestamp)
-      this.dialogStatus = 'update'
-      this.dialogFormVisible = true
+      this.temp = Object.assign({}, row); // copy obj
+      this.temp.timestamp = new Date(this.temp.timestamp);
+      this.dialogCycleFormVisible = true;
       this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
+        this.$refs["dataForm"].clearValidate();
+      });
     },
     updateData() {
-      this.$refs['dataForm'].validate((valid) => {
+      this.$refs["dataForm"].validate((valid) => {
         if (valid) {
-          const tempData = Object.assign({}, this.temp)
-          tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
+          const tempData = Object.assign({}, this.temp);
+          tempData.timestamp = +new Date(tempData.timestamp); // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
           updateArticle(tempData).then(() => {
-            const index = this.list.findIndex(v => v.id === this.temp.id)
-            this.list.splice(index, 1, this.temp)
-            this.dialogFormVisible = false
+            const index = this.list.findIndex((v) => v.id === this.temp.id);
+            this.list.splice(index, 1, this.temp);
+            this.dialogCycleFormVisible = false;
             this.$notify({
-              title: 'Success',
-              message: 'Update Successfully',
-              type: 'success',
-              duration: 2000
-            })
-          })
+              title: "Success",
+              message: "Update Successfully",
+              type: "success",
+              duration: 2000,
+            });
+          });
         }
-      })
-    }
-  }
-}
+      });
+    },
+  },
+};
 </script>
