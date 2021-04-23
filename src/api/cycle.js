@@ -1,10 +1,10 @@
 import request from '@/utils/request'
 
-export function getCycles(data) {
+export function getCycles(params) {
   return request({
     url: '/api/Cycles/getCycles',
     method: 'get',
-    data
+    params
   })
 }
 

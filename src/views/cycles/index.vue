@@ -166,10 +166,10 @@
         <el-checkbox v-model="cycleObj.Validity">是否有效</el-checkbox>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogCycleFormVisible = false"> Cancel </el-button>
+        <el-button @click="dialogCycleFormVisible = false"> 取消 </el-button>
         <el-button
           type="primary"
-          @click="createUpdateCycle ()"
+          @click="createUpdateCycle()"
         >
           保存
         </el-button>
