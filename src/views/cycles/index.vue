@@ -92,6 +92,14 @@
           <span>{{ row.ToDate }}</span>
         </template>
       </el-table-column>
+
+      <el-table-column v-for="productValue in productValueTypeList" :key="productValue.Value" :label="productValue.Label" width="80px">
+        <template slot-scope="{ row }">
+          <span>{{ row[productValue.Code] }}</span>
+        </template>
+      </el-table-column>
+
+
       <el-table-column label="是否有效" width="80px" sortable>
         <template slot-scope="{ row }">
           <span>{{ row.Validity }}</span>
@@ -173,7 +181,20 @@
 <script>
 import waves from "@/directive/waves"; // waves directive
 import { getCycles, createOrEditCycle } from "@/api/cycle";
-
+const productValueTypeList = [{
+  Value : 0,
+  Code: 'Banjing',
+  Label: '钣金'
+},{
+  Value : 1,
+  Code: 'Chengtao',
+  Label: '成套'
+},
+{
+  Value : 2,
+  Code: 'Huikuan',
+  Label: '回款'
+}];
 export default {
   name: "CyclesTable",
   directives: { waves },

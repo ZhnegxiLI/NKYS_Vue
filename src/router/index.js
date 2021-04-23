@@ -80,6 +80,12 @@ export const constantRoutes = [
         component: () => import('@/views/cycles/index'),
         meta: { title: 'Cycles', icon: 'table' }
       },
+      {
+        path: 'departments',
+        name: 'DepartmentsTable',
+        component: () => import('@/views/departments/index'),
+        meta: { title: 'Departments', icon: 'table' }
+      },
     ]
   },
 
