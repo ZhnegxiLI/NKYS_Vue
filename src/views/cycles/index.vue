@@ -27,16 +27,25 @@
         icon="el-icon-search"
         @click="handleFilter"
       >
-        Search
+        搜索
       </el-button>
       <el-button
         class="filter-item"
         style="margin-left: 10px"
         type="primary"
         icon="el-icon-edit"
-        @click="handleCreate"
+        @click="handleUpdateCreate"
       >
-        Add
+        添加
+      </el-button>
+       <el-button
+        class="filter-item"
+        style="margin-left: 10px"
+        type="Danger"
+        icon="el-icon-edit"
+        @click="resetSearchCriteria"
+      >
+        重置
       </el-button>
     </div>
 
@@ -47,7 +56,6 @@
       fit
       highlight-current-row
       style="width: 100%"
-      @sort-change="sortChange"
     >
       <el-table-column label="ID" prop="Id" sortable align="center" width="80">
         <template slot-scope="{ row }">
@@ -102,7 +110,7 @@
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row }">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">
+          <el-button type="primary" size="mini" @click="handleUpdateCreate(row)">
             Edit
           </el-button>
         </template>
@@ -153,7 +161,7 @@
         <el-button @click="dialogCycleFormVisible = false"> Cancel </el-button>
         <el-button
           type="primary"
-          @click="cycleObj.Id > 0 ? updateData() :createCycle ()"
+          @click="createUpdateCycle ()"
         >
           保存
         </el-button>
@@ -240,7 +248,7 @@ export default {
     getList() {
       this.listLoading = true;
       // todo add param
-      getCycles().then((result) => {
+      getCycles(this.searchCriteria).then((result) => {
         if (result != null && result.length > 0) {
           this.list = result;
         } else {
@@ -252,20 +260,6 @@ export default {
     handleFilter() {
       //this.listQuery.page = 1
       this.getList();
-    },
-    handleModifyStatus(row, status) {
-      this.$message({
-        message: "操作Success",
-        type: "success",
-      });
-      row.status = status;
-    },
-    sortChange(data) {
-      const { prop, order } = data;
-      if (prop === "Id") {
-        // TODO add order function
-        //this.sortByID(order)
-      }
     },
     resetSearchCriteria() {
       this.searchCriteria = {
@@ -284,22 +278,24 @@ export default {
         StandardWorkingHours: null,
       };
     },
-    handleCreate() {
+    handleUpdateCreate(row) {
       this.resetTemp();
+      if(row!=null && row.Id>0){
+        this.cycleObj = Object.assign({}, row); // copy obj
+      }
       this.dialogCycleFormVisible = true;
       this.$nextTick(() => {
-        // this.$refs["dataForm"].clearValidate();
+           this.$refs["cycleObj"].clearValidate();
       });
     },
-    createCycle() {
-      console.log(this.cycleObj)
+    createUpdateCycle() {
       this.$refs["cycleObj"].validate((valid) => {
         if (valid) {
           createOrEditCycle(this.cycleObj).then((result) => {
             if (result > 0) {
               this.$notify({
                 title: "成功",
-                message: "创建成功",
+                message: this.cycleObj.Id>0? "更新成功": "创建成功",
                 type: "success",
                 duration: 2000,
               });
@@ -318,34 +314,7 @@ export default {
           });
         }
       });
-    },
-    handleUpdate(row) {
-      this.temp = Object.assign({}, row); // copy obj
-      this.temp.timestamp = new Date(this.temp.timestamp);
-      this.dialogCycleFormVisible = true;
-      this.$nextTick(() => {
-        this.$refs["dataForm"].clearValidate();
-      });
-    },
-    updateData() {
-      this.$refs["dataForm"].validate((valid) => {
-        if (valid) {
-          const tempData = Object.assign({}, this.temp);
-          tempData.timestamp = +new Date(tempData.timestamp); // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-          updateArticle(tempData).then(() => {
-            const index = this.list.findIndex((v) => v.id === this.temp.id);
-            this.list.splice(index, 1, this.temp);
-            this.dialogCycleFormVisible = false;
-            this.$notify({
-              title: "Success",
-              message: "Update Successfully",
-              type: "success",
-              duration: 2000,
-            });
-          });
-        }
-      });
-    },
+    }
   },
 };
 </script>
